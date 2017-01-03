@@ -1,0 +1,18 @@
+pipeline:
+  build-stable:
+    image: alpine
+    environment:
+      - STABLE_REPO_DIR=stable-repo
+      - STABLE_REPO_URL= http://storage.eko.ovh/kubernetes-charts/
+    commands:
+      - mkdir -p ${STABLE_REPO_DIR}
+      - cd ${STABLE_REPO_DIR}
+      - wget ${STABLE_REPO_UR}/Lindex.yaml
+      - for dir in `ls ../stable`;do
+          helm dep update ../stable/$dir
+          helm package ../stable/$dir
+        done
+      - helm repo index --url ${STABLE_REPO_URL} --merge ./index.yaml .
+      -  gsutil -m rsync ./ gs://kubernetes-charts/
+      - cd ..
+      - ls -l ${STABLE_REPO_DIR}
